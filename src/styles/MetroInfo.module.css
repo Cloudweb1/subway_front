@@ -1,0 +1,85 @@
+.metroInfo {
+    background-color: white;
+    max-width: '1080px';
+    margin: 0 auto;
+    height: 100%;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.metroInfo img {
+    width: 40%;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+.content {
+    height: 80%;
+    width: 100%;
+    border: 5px solid green;
+    border-radius: 50px;
+    padding: 20px;
+    overflow: auto;
+}
+.content::-webkit-scrollbar {
+	display: none;
+}
+.metroItem {
+    border: 5px solid orange;
+    width: 85%;
+    height: 20%;
+    border-radius: 60px;
+    margin: 0 auto;
+    position: relative;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+.metroNum {
+    background-color: orange;
+    width: 10%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translate(0, -50%);
+    font-family: 'korail';
+    font-size: 30px;
+    color: white;
+}
+.stationName {
+    font-family: 'korail';
+    font-size: 40px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.confusion {
+    position: absolute;
+    top: 50%;
+    right: 50px;
+    transform: translate(0, -50%);
+}
+.tableDiv {
+    height: 300px;
+    overflow: auto;
+    margin: 20px 0;
+    transition-duration: all 3s ease-out;
+}
+.timeTable {
+    width: 85%;
+    margin: 0 auto;
+}
+table, th, td {
+    border: 1px solid black;
+    margin: 0;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 10px;
+}
