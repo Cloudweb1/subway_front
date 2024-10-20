@@ -9,10 +9,10 @@
     justify-content: center;
     align-items: center;
 }
-.metroInfo img {
+.logo {
     width: 40%;
-    cursor: pointer;
     margin-bottom: 20px;
+    cursor: pointer;
 }
 .content {
     height: 80%;
@@ -62,8 +62,8 @@
 .confusion {
     position: absolute;
     top: 50%;
-    right: 50px;
-    transform: translate(0, -50%);
+    right: 20px;
+    transform: translate(0, -40%);
 }
 .tableDiv {
     height: 300px;
@@ -82,4 +82,75 @@ table, th, td {
 }
 th, td {
     padding: 10px;
+}
+th {
+    position: relative;
+}
+
+.metroItem2 {
+    display: flex;
+    height: 25%;
+    align-items: center;
+    position: relative;
+}
+.line {
+    width: 90%;
+    margin: 0 auto;
+    height: 5px;
+}
+.stationFrame {
+    background-color: white;
+    height: 50%;
+    width: 25%;
+    border-radius: 50px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.stationId {
+    color: white;
+    height: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'korail';
+}
+.stationName {
+    font-family: 'korail';
+    font-size: 25px;
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    transform: translateY(-50%);
+    text-align: center;
+    width: 60%;
+}
+.adj {
+    position: absolute;
+    top: 60%;
+    transform: translateY(-50%);
+    font-family: 'korail';
+}
+.comingTrain {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    position: absolute;
+    top: 6%;
+}
+.eta {
+    position: absolute;
+    top: 55%;
+    font-family: korail;
+    color: orangered;
+    font-size: 12px;
+}
+.secondEta {
+    top: 65%;
 }
