@@ -1,3 +1,3 @@
 echo "install dependencies"
-cd /home/ec2-user/deploy_front
+cd /home/ec2-user/frontend/deploy
 npm install
