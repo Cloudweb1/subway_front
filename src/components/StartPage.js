@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -6,11 +5,9 @@ import style from '../styles/StartPage.module.css';
 
 function StartPage() {
 
-    // const [stationName, setStationName] = useState([]);
-    // const [lineNum, setLineNum] = useState([]);
-
     const navigate = useNavigate();
 
+    //사용자 위치정보 가져오기
     const getpo = ()  => {
         navigator.geolocation.getCurrentPosition(success, error, options);
     }
@@ -25,20 +22,9 @@ function StartPage() {
                 longitude: crd.longitude
             }
         }).then(res => {
-            let stations = [];
-            let lines = [];
-            let ids = [];
-            // const res = {
-            //     data: [{
-            //             name: '건대입구',
-            //             lineNumber: '7'
-            //         },
-            //         {
-            //             name: '건대입구',
-            //             lineNumber: '2'
-            //         }
-            //     ]
-            // }
+            let stations = [];    //역명
+            let lines = [];    //호선
+            let ids = [];    //역 번호
             for(let i = 0; i < res.data.length; i++) {
                 stations.push(res.data[i].name);
                 lines.push(res.data[i].lineNumber);

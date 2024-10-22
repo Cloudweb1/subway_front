@@ -1,17 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios, { all } from 'axios';
+import axios from 'axios';
 
 import { MdSignalCellularAlt1Bar, MdSignalCellularAlt2Bar, MdSignalCellularAlt  } from "react-icons/md"; 
 import { FaSignal } from "react-icons/fa";
-// import { MdSignalCellularAlt2Bar } from "react-icons/md";
 
 import style from '../styles/MetroInfo.module.css';
 import subway from '../assets/imgs/subway.png';
 import subwayImg from '../assets/imgs/subway_paint.png';
 
 function MetroInfo() {
-    let c = 0;
     const lineColor = {
         1: '#0032A0',
         2: '#00B140',
@@ -24,43 +22,8 @@ function MetroInfo() {
         9: '#8C8279',
     }
 
-    const congestionRes = {
-        data: [
-            {
-                lineNumber: '2',
-                stationId: '240',
-                name: '건대입구',
-                direction: '1',
-                congestion: '106.3',
-            },
-            {
-                lineNumber: '2',
-                stationId: '240',
-                name: '건대입구',
-                direction: '2',
-                congestion: '31.3',
-            },
-            {
-                lineNumber: '7',
-                stationId: '240',
-                name: '건대입구',
-                direction: '1',
-                congestion: '48.3',
-            },
-            {
-                lineNumber: '7',
-                stationId: '240',
-                name: '건대입구',
-                direction: '2',
-                congestion: '82.3',
-            }
-        ]
-    }
-
     const navigate = useNavigate();
     
-    // const {stations, lines} = params;
-
     const [showDetail, setShowDetail] = useState([]);
     const [stationIds, setStationIds] = useState([]);
     const [stationName, setStationName] = useState([]);
@@ -80,17 +43,22 @@ function MetroInfo() {
         let consArr= [];
         let adjarr = [];
         let arrCollection = [];
+        //초기 state 설정
         setStationIds(state.ids);
         setStationName(state.stations);
         setLineNums([...state.lines]);
         setTotalNum(state.stations.length);
+
         if(state.stations.length > 0) {
             for(let i = 0; i < state.stations.length; i++) {
+                //혼잡도 
                 axios.get(`/api/metro/stations/${state.stations[i]}/congestions`).then(res => {
                     let congestion = res.data.result.congestion;
                     for(let j = 0; j < congestion.length; j++) {
+                        //해당 역과 같은 호선 혼잡도만 (환승역일 경우 여러 호선 존재)
                         if(congestion[j].lineNumber == state.lines[i]) {
                             let { upDegree, downDegree } = congestion[j];
+                            //혼잡도 데이터 없는 경우
                             if(isNaN(upDegree)) {
                                 upDegree = -1;
                                 downDegree = -1;
@@ -110,10 +78,13 @@ function MetroInfo() {
                     console.log('error');
                     console.log(res);
                 })
+
+                //도착정보 가져오기
                 axios.get(`/api/metro/stations/${state.stations[i]}/arrivals`).then(res => {
                     let allResult = res.data.result;
-                    console.log(state.stations[i], allResult);
+                    console.log(allResult);
                     
+                    //도착정보가 없을 시 --:--
                     if(typeof allResult === 'string') {
                         let temp = {
                             prevStation: '--',
@@ -122,21 +93,22 @@ function MetroInfo() {
                         adjarr[i] = temp;
                         arrCollection[i] = ({1: ['--:--', '--:--'], 2: ['--:--', '--:--']});
                     }
-                    else if(allResult.length > 1) {
-                        let arrTimeU = [];
-                        let arrTimeD = [];
+                    else if(allResult.length > 0) {
+                        let arrTimeU = [];    //상행선 예상 도착시간
+                        let arrTimeD = [];    //하행선 예상 도착시간
+
+                        //상행선 기준으로 인접역 가져온 후 배열에 넣기
                         for(let k = 0; k < allResult.length; k++) {
                             if(allResult[k].lineNumber == state.lines[i]) {
                                 if(allResult[k].direction === '1') {
                                     let {prevStation, nextStation} =  allResult[k];
                                     let adjacentStn = {prevStation, nextStation};
-                                    // adjarr.push(adjacentStn);
                                     adjarr[i] = adjacentStn;
-                                    console.log(adjarr);
                                     break;
                                 }
                             }
                         }
+                        //상, 하행 예상 도착시간 배열에 넣기
                         for(let k = 0; k < allResult.length; k++) {
                             if(allResult[k].lineNumber == state.lines[i]) {
                                 if(allResult[k].direction === '1') {
@@ -151,22 +123,7 @@ function MetroInfo() {
                         }
                         arrCollection[i] = ({1: arrTimeU, 2: arrTimeD});
                     }
-                    // else {
-                    //     for(let k = 0; k < allResult.length; k++) {
-                    //         if(allResult[k].lineNumber == state.lines[i]) {
-                    //             if(allResult[k].direction === '1') {
-                    //                 let {prevStation, nextStation} =  allResult[k];
-                    //                 let adjacentStn = {prevStation, nextStation};
-                    //                 // adjarr.push(adjacentStn);
-                    //                 adjarr[i] = adjacentStn;
-                    //                 console.log(adjarr);
-                    //                 break;
-                    //             }
-                    //         }
-                    //     }
-                    // }
-                    console.log(arrCollection);
-                    // if(adjarr.length === state.stations.length)
+                    //인접역과 도착시간정보 state 할당
                     if(adjarr.filter(item => item !== undefined).length === state.stations.length)
                         setAdjacent(adjarr);
                     if(arrCollection.filter(item => item !== undefined).length === state.stations.length)
@@ -180,10 +137,9 @@ function MetroInfo() {
         setCongestions(consArr);
     }, [state]);
     
+    //홈화면 이동
     const goHome = () => {
-        // navigate('/');
-        // console.log(stations, lines);
-        // console.log();
+        navigate('/');
     }
 
     const renderItems = () => {
@@ -193,9 +149,7 @@ function MetroInfo() {
                         <div className={`${style.metroItem}`} onClick={() => {
                             let temp = [...showDetail];
                             temp[idx] = !temp[idx];
-                            console.log(idx);
                             setShowDetail(temp);
-                            console.log(lineColor[lineNums[idx]]);
                         }} style ={{
                             borderColor: `${lineColor[lineNums[idx]]}`
                         }}>
@@ -241,11 +195,10 @@ function MetroInfo() {
         );
     }
 
+    //혼잡도별 아이콘 렌더링
     const renderCongestion = (congestion, direction) => {
         if(congestion) { 
-            console.log(congestions);
             let result = direction === 'u' ? congestion.upDegree : congestion.downDegree;
-            console.log(result);
             if(result < 0) {
 
             }
@@ -265,7 +218,6 @@ function MetroInfo() {
     }
 
     const renderItems2 = () => {
-        console.log(adjacent);
         return(
             stationName.map((station, idx) => (
                 <>
@@ -275,30 +227,42 @@ function MetroInfo() {
                             <div className={`${style.stationId}`} style={{backgroundColor: `${lineColor[lineNums[idx]]}`}}>{stationIds[idx]}</div>
                             <p className={`${style.stationName}`}>{station}</p>
                         </div>
-                        {/* <p className={`${style.adj}`} style={{left: '5%'}}>{adjacent[idx] && adjacent[idx].prevStation}</p> */}
                         {adjacent[idx] && <p className={`${style.adj}`} style={{left: '5%'}}>{adjacent[idx].prevStation}</p>}
-                        <div className={`${style.comingTrain}`} style={{left: '5%'}}>
-                            {/* <MdSignalCellularAlt size='25' color='orange' /> */}
+                        {arriveT[idx] && 
+                        <div className={`${style.comingTrain}`} style={{left: `${5 + 3 * timecalc(arriveT[idx]['1'][0])}%`}}>
                             {congestions[idx] && renderCongestion(congestions[idx], 'u')}
                             <img src={subwayImg} style={{width: '55px', margin: 0, transform: 'scaleX(-1)'}} />
                         </div>
-                        {/* <p className={`${style.eta}`} style={{right: '63%'}}>12:48 도착 예정</p> */}
+                        }
                         {arriveT[idx] && <p className={`${style.eta}`} style={{right: '63%'}}>{`${arriveT[idx]['1'][0]} 도착 예정`}</p>}
                         {arriveT[idx] && <p className={`${style.secondEta} ${style.eta}`} style={{right: '63%'}}>{`${arriveT[idx]['1'][1]} 도착 예정`}</p>}
                         {adjacent[idx] && <p className={`${style.adj}`} style={{right: '5%'}}>{adjacent[idx].nextStation}</p>}
-                        <div className={`${style.comingTrain}`} style={{right: '5%'}}>
-                            {/* <FaSignal size='25' color='red' /> */}
+                        {arriveT[idx] &&
+                        <div className={`${style.comingTrain}`} style={{right: `${5 + 3 * timecalc(arriveT[idx]['2'][0])}%`}}>
                             {congestions[idx] && renderCongestion(congestions[idx], 'd')}
                             <img src={subwayImg} style={{width: '55px', margin: 0}} />
                         </div>
+                        }
                         {arriveT[idx] && <p className={`${style.eta}`} style={{left: '63%'}}>{`${arriveT[idx]['2'][0]} 도착 예정`}</p>}
                         {arriveT[idx] && <p className={`${style.secondEta} ${style.eta}`} style={{left: '63%'}}>{`${arriveT[idx]['2'][1]} 도착 예정`}</p>}
-                        {/* <p className={`${style.eta}`} style={{left: '63%'}}>12:48 도착 예정</p>
-                        <p className={`${style.secondEta} ${style.eta}`} style={{left: '63%'}}>12:48 도착 예정</p> */}
                     </div>
                 </>
             ))
         );
+    }
+
+    //현재 시간 - 열차 예상 도착 시간
+    const timecalc = arriveTime => {
+        let currentMin = Number(new Date().getMinutes());
+        let arriveMin = Number(arriveTime.slice(-2));        
+
+        if(isNaN(currentMin) || isNaN(arriveMin) || arriveMin - currentMin >= 9) return 0;
+        else if(arriveMin - currentMin >= 0) {
+            return 9 - (arriveMin - currentMin);
+        } 
+        else {
+            return 9 - (arriveMin - currentMin + 60);
+        }         
     }
 
     return(
@@ -307,68 +271,6 @@ function MetroInfo() {
             <div className={`${style.content}`}>
                 {/* {renderItems()} */}
                 {renderItems2()}
-                {/* <div style={{display: 'flex', height: '25%', alignItems: 'center', position: 'relative'}}>
-                    <div style={{backgroundColor: 'green', width: '90%', margin: '0 auto', height: '5px'}}></div>
-                    <div style={{backgroundColor: 'white', height: '50%', width: '25%', borderRadius: '50px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', border: '3px green solid'}}>
-                        <div style={{backgroundColor: 'green', color: 'white', height: '60%', aspectRatio: '1', borderRadius: '50%', position: 'absolute', top: '50%', left: '18px', transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'korail'}}>212</div>
-                        <p style={{fontFamily: 'korail', fontSize: '25px', position: 'absolute', top: '50%', left: '25%', transform: 'translateY(-50%)', textAlign: 'center', width: '60%'}} className={`${style.sName}`}>건대입구</p>
-                    </div>
-                    <p style={{position: 'absolute', top: '60%', left: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>성수</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', left: '5%'}}>
-                        <MdSignalCellularAlt size='25' color='orange' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0, transform: 'scaleX(-1)'}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', right: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                    
-                    <p style={{position: 'absolute', top: '60%', right: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>구의</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', right: '5%'}}>
-                        <FaSignal size='25' color='red' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', left: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                </div>
-
-                <div style={{display: 'flex', height: '25%', alignItems: 'center', position: 'relative'}}>
-                    <div style={{backgroundColor: 'green', width: '90%', margin: '0 auto', height: '5px'}}></div>
-                    <div style={{backgroundColor: 'white', height: '50%', width: '25%', borderRadius: '50px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', border: '3px green solid'}}>
-                        <div style={{backgroundColor: 'green', color: 'white', height: '60%', aspectRatio: '1', borderRadius: '50%', position: 'absolute', top: '50%', left: '18px', transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'korail'}}>212</div>
-                        <p style={{fontFamily: 'korail', fontSize: '25px', position: 'absolute', top: '50%', left: '25%', transform: 'translateY(-50%)', textAlign: 'center', width: '60%'}} className={`${style.sName}`}>건대입구</p>
-                    </div>
-                    <p style={{position: 'absolute', top: '60%', left: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>성수</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', left: '5%'}}>
-                        <MdSignalCellularAlt size='25' color='orange' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0, transform: 'scaleX(-1)'}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', right: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                    
-                    <p style={{position: 'absolute', top: '60%', right: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>구의</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', right: '5%'}}>
-                        <FaSignal size='25' color='red' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', left: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                </div>
-
-                <div style={{display: 'flex', height: '25%', alignItems: 'center', position: 'relative'}}>
-                    <div style={{backgroundColor: 'green', width: '90%', margin: '0 auto', height: '5px'}}></div>
-                    <div style={{backgroundColor: 'white', height: '50%', width: '25%', borderRadius: '50px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', border: '3px green solid'}}>
-                        <div style={{backgroundColor: 'green', color: 'white', height: '60%', aspectRatio: '1', borderRadius: '50%', position: 'absolute', top: '50%', left: '18px', transform: 'translateY(-50%)', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'korail'}}>212</div>
-                        <p style={{fontFamily: 'korail', fontSize: '25px', position: 'absolute', top: '50%', left: '25%', transform: 'translateY(-50%)', textAlign: 'center', width: '60%'}} className={`${style.sName}`}>건대입구</p>
-                    </div>
-                    <p style={{position: 'absolute', top: '60%', left: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>성수</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', left: '5%'}}>
-                        <MdSignalCellularAlt size='25' color='orange' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0, transform: 'scaleX(-1)'}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', right: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                    
-                    <p style={{position: 'absolute', top: '60%', right: '5%', transform: 'translateY(-50%)', fontFamily: 'korail'}}>구의</p>
-                    <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', position: 'absolute', top: '6%', right: '5%'}}>
-                        <FaSignal size='25' color='red' />
-                        <img src={subwayImg} style={{width: '55px', margin: 0}} />
-                    </div>
-                    <p style={{position: 'absolute', top: '55%', fontFamily: 'korail', left: '63%', color: 'orangered', fontSize: '12px'}}>12:48 도착 예정</p>
-                </div> */}
             </div>
         </div>
     );
