@@ -4,6 +4,10 @@ files:
   - source: /
     destination: /home/ec2-user/frontend/deploy/
 hooks:
+  BeforeInstall:
+    - location: scripts/remove_artifact.sh
+      timeout: 300
+      runas: root
   AfterInstall:
     - location: scripts/change_permission.sh
       timeout: 300
